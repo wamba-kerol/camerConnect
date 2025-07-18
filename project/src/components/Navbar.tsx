@@ -39,8 +39,11 @@ export const Navbar: React.FC = () => {
                 <Link to="/interactions" className={`transition-colors duration-200 ${isActive('/interactions')}`}>
                   Mes interactions
                 </Link>
+                <Link to="/entreprise" className={`transition-colors duration-200 ${isActive('/entreprise')}`}>
+                  Mes entreprises
+                </Link>
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">Bonjour, {user?.name}</span>
+                  {/* <span className="text-sm text-gray-600">Bonjour, {user?.name}</span> */}
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-2 text-gray-600 hover:text-black transition-colors duration-200"
@@ -95,6 +98,13 @@ export const Navbar: React.FC = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Mes interactions
+                </Link>
+                <Link
+                  to="/entreprise"
+                  className={`block transition-colors duration-200 ${isActive('/entreprise')}`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Mes entreprises
                 </Link>
                 <div className="pt-4 border-t border-gray-100">
                   <p className="text-sm text-gray-600 mb-2">Bonjour, {user?.name}</p>

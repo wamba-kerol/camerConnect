@@ -12,6 +12,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Category } from './pages/Category';
 import { BusinessDetail } from './pages/BusinessDetail';
 import { Interactions } from './pages/Interactions';
+import Entreprises from './pages/Entreprises';
+import AddBusiness from './pages/AddBusiness';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -38,6 +40,9 @@ function AppContent() {
         <Route path="/category/:categoryId" element={<ProtectedRoute><Category /></ProtectedRoute>} />
         <Route path="/business/:businessId" element={<ProtectedRoute><BusinessDetail /></ProtectedRoute>} />
         <Route path="/interactions" element={<ProtectedRoute><Interactions /></ProtectedRoute>} />
+        <Route path="/entreprise" element={<ProtectedRoute><Entreprises /></ProtectedRoute>} />
+        <Route path="/add-business" element={<ProtectedRoute><AddBusiness /></ProtectedRoute>} />
+
       </Routes>
     </div>
   );
