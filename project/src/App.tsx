@@ -1,105 +1,55 @@
-import React, { useState } from 'react';
-import { Category, Business } from './types';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import CategoryPage from './pages/CategoryPage';
-import BusinessProfilePage from './pages/BusinessProfilePage';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Navbar } from './components/Navbar';
+import { Home } from './pages/Home';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { OTP } from './pages/OTP';
+import { ResetPassword } from './pages/ResetPassword';
+import { Dashboard } from './pages/Dashboard';
+import { Category } from './pages/Category';
+import { BusinessDetail } from './pages/BusinessDetail';
+import { Interactions } from './pages/Interactions';
 
-type Page = 'landing' | 'login' | 'register' | 'dashboard' | 'category' | 'business';
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
+
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" />;
+};
+
+function AppContent() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/otp" element={<PublicRoute><OTP /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/category/:categoryId" element={<ProtectedRoute><Category /></ProtectedRoute>} />
+        <Route path="/business/:businessId" element={<ProtectedRoute><BusinessDetail /></ProtectedRoute>} />
+        <Route path="/interactions" element={<ProtectedRoute><Interactions /></ProtectedRoute>} />
+      </Routes>
+    </div>
+  );
+}
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('landing');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string>('');
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    setCurrentPage('dashboard');
-  };
-
-  const handleRegister = () => {
-    setIsAuthenticated(true);
-    setCurrentPage('dashboard');
-  };
-
-  const handleCategorySelect = (category: Category) => {
-    setSelectedCategoryId(category.id);
-    setCurrentPage('category');
-  };
-
-  const handleBusinessSelect = (business: Business) => {
-    setSelectedBusinessId(business.id);
-    setCurrentPage('business');
-  };
-
-  const handleBack = () => {
-    if (currentPage === 'category') {
-      setCurrentPage('dashboard');
-    } else if (currentPage === 'business') {
-      setCurrentPage('category');
-    } else if (currentPage === 'login' || currentPage === 'register') {
-      setCurrentPage('landing');
-    }
-  };
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'landing':
-        return (
-          <LandingPage
-            onLogin={() => setCurrentPage('login')}
-            onRegister={() => setCurrentPage('register')}
-          />
-        );
-      case 'login':
-        return (
-          <LoginPage
-            onLogin={handleLogin}
-            onBack={handleBack}
-            onRegister={() => setCurrentPage('register')}
-          />
-        );
-      case 'register':
-        return (
-          <RegisterPage
-            onRegister={handleRegister}
-            onBack={handleBack}
-            onLogin={() => setCurrentPage('login')}
-          />
-        );
-      case 'dashboard':
-        return (
-          <DashboardPage
-            onCategorySelect={handleCategorySelect}
-          />
-        );
-      case 'category':
-        return (
-          <CategoryPage
-            categoryId={selectedCategoryId}
-            onBusinessSelect={handleBusinessSelect}
-            onBack={handleBack}
-          />
-        );
-      case 'business':
-        return (
-          <BusinessProfilePage
-            businessId={selectedBusinessId}
-            onBack={handleBack}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {renderPage()}
-    </div>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

@@ -1,17 +1,8 @@
-export interface Business {
+export interface User {
   id: string;
   name: string;
-  category: string;
-  location: string;
-  description: string;
-  image: string;
-  rating: number;
-  reviews: number;
-  phone: string;
-  website?: string;
-  hours: string;
-  services: string[];
-  isPremium: boolean;
+  email: string;
+  isAuthenticated: boolean;
 }
 
 export interface Category {
@@ -22,12 +13,31 @@ export interface Category {
   count: number;
 }
 
-export interface Review {
+export interface Business {
   id: string;
-  author: string;
+  name: string;
+  description: string;
+  category: string;
+  categoryId: string;
+  location: string;
   rating: number;
-  comment: string;
-  date: string;
+  reviews: number;
+  phone: string;
+  email: string;
+  website?: string;
+  image: string;
+  isPremium: boolean;
+  services: string[];
+  hours: {
+    [key: string]: string;
+  };
 }
 
-export type Page = 'landing' | 'login' | 'register' | 'dashboard' | 'category' | 'business';
+export interface Interaction {
+  id: string;
+  businessId: string;
+  businessName: string;
+  type: 'view' | 'contact' | 'review' | 'favorite';
+  date: string;
+  details?: string;
+}
