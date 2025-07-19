@@ -10,6 +10,7 @@ import { OTP } from './pages/OTP';
 import { ResetPassword } from './pages/ResetPassword';
 import { Dashboard } from './pages/Dashboard';
 import { Category } from './pages/Category';
+import CategoryPage from './pages/CategoryPage';
 import { BusinessDetail } from './pages/BusinessDetail';
 import { Interactions } from './pages/Interactions';
 import Entreprises from './pages/Entreprises';
@@ -38,6 +39,7 @@ function AppContent() {
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/category/:categoryId" element={<ProtectedRoute><Category /></ProtectedRoute>} />
+        <Route path="/secteur/:secteur" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
         <Route path="/business/:businessId" element={<ProtectedRoute><BusinessDetail /></ProtectedRoute>} />
         <Route path="/interactions" element={<ProtectedRoute><Interactions /></ProtectedRoute>} />
         <Route path="/entreprise" element={<ProtectedRoute><Entreprises /></ProtectedRoute>} />

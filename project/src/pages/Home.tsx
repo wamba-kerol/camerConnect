@@ -5,6 +5,20 @@ import { Search, Users, Building, Star, ArrowRight, MapPin, Smartphone, Building
  import CompanyImage from '../image/Company-rafiki.svg'
 
 export const Home: React.FC = () => {
+  const [popularSectors, setPopularSectors] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchPopularSectors = async () => {
+      try {
+        const res = await fetch('/api/secteurs/populaires');
+        const data = await res.json();
+        setPopularSectors(Array.isArray(data) ? data.slice(0, 4) : []);
+      } catch {
+        setPopularSectors([]);
+      }
+    };
+    fetchPopularSectors();
+  }, []);
   const { isAuthenticated } = useAuth();
 
   const features = [
