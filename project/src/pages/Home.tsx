@@ -30,12 +30,38 @@ export const Home: React.FC = () => {
     }
   ];
 
-  const stats = [
-    { number: '500+', label: 'Entreprises partenaires' },
-    { number: '10K+', label: 'Utilisateurs actifs' },
-    { number: '15+', label: 'Catégories de services' },
-    { number: '4.8', label: 'Note moyenne' }
-  ];
+  const [stats, setStats] = React.useState({
+    entreprises: null,
+    utilisateurs: null,
+    secteurs: null,
+    moyenneNotes: null
+  });
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [resEntreprises, resUtilisateurs, resSecteurs, resNotes] = await Promise.all([
+          fetch('/api/stats/entreprises'),
+          fetch('/api/stats/utilisateurs'),
+          fetch('/api/stats/secteurs'),
+          fetch('/api/stats/moyenne-notes'),
+        ]);
+        const entreprises = await resEntreprises.json();
+        const utilisateurs = await resUtilisateurs.json();
+        const secteurs = await resSecteurs.json();
+        const moyenneNotes = await resNotes.json();
+        setStats({
+          entreprises: entreprises.nombre_entreprises ?? '-',
+          utilisateurs: utilisateurs.nombre_utilisateurs ?? '-',
+          secteurs: secteurs.nombre_secteurs ?? '-',
+          moyenneNotes: moyenneNotes.moyenne_notes ?? '-',
+        });
+      } catch {
+        setStats({ entreprises: '-', utilisateurs: '-', secteurs: '-', moyenneNotes: '-' });
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -125,12 +151,22 @@ export const Home: React.FC = () => {
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl font-bold text-black mb-2">{stat.number}</div>
-                <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black mb-2">{stats.entreprises ?? '-'}</div>
+              <div className="text-gray-600">Entreprises partenaires</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black mb-2">{stats.utilisateurs ?? '-'}</div>
+              <div className="text-gray-600">Utilisateurs actifs</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black mb-2">{stats.secteurs ?? '-'}</div>
+              <div className="text-gray-600">Secteurs</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black mb-2">{stats.moyenneNotes ?? '-'}</div>
+              <div className="text-gray-600">Note moyenne</div>
+            </div>
           </div>
         </div>
       </div>

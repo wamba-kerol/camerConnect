@@ -4,7 +4,7 @@ import { User } from '../types';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (nom: string, email: string, password: string, ville: string, age: string, genre: string) => Promise<any>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -27,34 +27,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error('Réponse non JSON: ' + text);
+    }
+    if (!response.ok) {
+      throw new Error(data.message || 'Email ou mot de passe incorrect');
+    }
+    // Stocke le token et les infos utilisateur
     const newUser: User = {
-      id: '1',
-      name: 'John Doe',
-      email,
+      id: data.id_utilisateur,
+      name: data.nom,
+      email: data.email,
       isAuthenticated: true
     };
-    
     setUser(newUser);
+    // Optionnel: stocker le token dans localStorage
+    localStorage.setItem('authToken', data.token);
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newUser: User = {
-      id: '1',
-      name,
-      email,
-      isAuthenticated: true
-    };
-    
-    setUser(newUser);
+  const register = async (nom: string, email: string, password: string, ville: string, age: string, genre: string) => {
+    // Appel réel à l'API Laravel
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nom, email, password, ville, age, genre }),
+    });
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error('Réponse non JSON: ' + text);
+    }
+    if (!response.ok) {
+      throw new Error(data.error || 'Erreur lors de la création du compte');
+    }
+    return data;
   };
 
   const logout = () => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      localStorage.removeItem('authToken');
+    }
     setUser(null);
   };
 

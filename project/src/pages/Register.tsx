@@ -39,10 +39,12 @@ export const Register: React.FC = () => {
     }
 
     try {
-      await register(name, email, password); // Ajoute ici city, age, gender si ton back les accepte
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Erreur lors de la création du compte. Veuillez réessayer.');
+      const res = await register(name, email, password, city, age, gender);
+      setError('');
+      alert(res.message || 'Code de vérification envoyé par email. Vérifiez votre boîte mail.');
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la création du compte. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }

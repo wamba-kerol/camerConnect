@@ -6,7 +6,7 @@ export const OTP: React.FC = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(3600); // 60 minutes
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,14 +35,12 @@ export const OTP: React.FC = () => {
   };
 
   const handleChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    
+    // Accepte chiffres et lettres (alphanumérique, 1 caractère max)
+    const char = value.slice(0, 1);
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = char;
     setOtp(newOtp);
-
-    // Auto-focus next input
-    if (value && index < 5) {
+    if (char && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -66,13 +64,24 @@ export const OTP: React.FC = () => {
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For demo purposes, accept any 6-digit code
+      const response = await fetch('/api/password/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: otpCode }),
+      });
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Réponse non JSON: ' + text);
+      }
+      if (!response.ok) {
+        throw new Error(data.message || 'Code invalide.');
+      }
       navigate('/reset-password', { state: { email, otpCode } });
-    } catch (err) {
-      setError('Code invalide. Veuillez réessayer.');
+    } catch (err: any) {
+      setError(err.message || 'Code invalide. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }
@@ -81,13 +90,26 @@ export const OTP: React.FC = () => {
   const handleResend = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setTimeLeft(300); // Reset timer
+      const response = await fetch('/api/password/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Réponse non JSON: ' + text);
+      }
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors du renvoi du code.');
+      }
+      setTimeLeft(3600); // Reset timer à 60 minutes
       setOtp(['', '', '', '', '', '']);
       setError('');
-    } catch (err) {
-      setError('Erreur lors du renvoi du code.');
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors du renvoi du code.');
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +123,6 @@ export const OTP: React.FC = () => {
             <ArrowLeft size={20} />
             <span>Retour</span>
           </Link>
-          
           <div className="text-center">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
@@ -115,14 +136,12 @@ export const OTP: React.FC = () => {
             <p className="font-medium text-black">{email}</p>
           </div>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
-          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
               Code de vérification
@@ -133,18 +152,15 @@ export const OTP: React.FC = () => {
                   key={index}
                   ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
                   maxLength={1}
                   className="w-12 h-12 text-center text-xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   value={digit}
-                  onChange={(e) => handleChange(index, e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                 />
               ))}
             </div>
           </div>
-
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
               Temps restant: <span className="font-medium text-black">{formatTime(timeLeft)}</span>
@@ -160,7 +176,6 @@ export const OTP: React.FC = () => {
               </button>
             )}
           </div>
-
           <div>
             <button
               type="submit"
@@ -170,7 +185,6 @@ export const OTP: React.FC = () => {
               {isLoading ? 'Vérification...' : 'Vérifier le code'}
             </button>
           </div>
-
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Vous n'avez pas reçu le code ?{' '}
