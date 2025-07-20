@@ -39,11 +39,11 @@ export const Navbar: React.FC = () => {
                 <Link to="/interactions" className={`transition-colors duration-200 ${isActive('/interactions')}`}>
                   Mes interactions
                 </Link>
-                <Link to="/entreprise" className={`transition-colors duration-200 ${isActive('/entreprise')}`}>
-                  Mes entreprises
+                <Link to="/profil" className={`transition-colors duration-200 ${isActive('/profil')}`}>
+                  Profil
                 </Link>
                 <div className="flex items-center space-x-4">
-                  {/* <span className="text-sm text-gray-600">Bonjour, {user?.name}</span> */}
+                  <span className="text-sm text-gray-600">Bonjour, {user?.name}</span>
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-2 text-gray-600 hover:text-black transition-colors duration-200"

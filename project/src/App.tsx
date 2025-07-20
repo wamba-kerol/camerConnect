@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
@@ -10,10 +10,11 @@ import { OTP } from './pages/OTP';
 import { ResetPassword } from './pages/ResetPassword';
 import { Dashboard } from './pages/Dashboard';
 import { Category } from './pages/Category';
+import CategoryPage from './pages/CategoryPage';
 import { BusinessDetail } from './pages/BusinessDetail';
 import { Interactions } from './pages/Interactions';
-import Entreprises from './pages/Entreprises';
-import AddBusiness from './pages/AddBusiness';
+import Profile from './pages/Profile';
+import ProfileEdit from './pages/ProfileEdit';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -38,10 +39,12 @@ function AppContent() {
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/category/:categoryId" element={<ProtectedRoute><Category /></ProtectedRoute>} />
+        <Route path="/secteur/:secteur" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
         <Route path="/business/:businessId" element={<ProtectedRoute><BusinessDetail /></ProtectedRoute>} />
         <Route path="/interactions" element={<ProtectedRoute><Interactions /></ProtectedRoute>} />
-        <Route path="/entreprise" element={<ProtectedRoute><Entreprises /></ProtectedRoute>} />
-        <Route path="/add-business" element={<ProtectedRoute><AddBusiness /></ProtectedRoute>} />
+        <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/profil/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
+
 
       </Routes>
     </div>

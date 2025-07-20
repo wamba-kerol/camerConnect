@@ -34,11 +34,24 @@ export const ResetPassword: React.FC = () => {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/password/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: otpCode, new_password: password }),
+      });
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Réponse non JSON: ' + text);
+      }
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de la réinitialisation.');
+      }
       setIsSuccess(true);
-    } catch (err) {
-      setError('Erreur lors de la réinitialisation. Veuillez réessayer.');
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la réinitialisation. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }

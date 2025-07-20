@@ -16,11 +16,24 @@ export const ForgotPassword: React.FC = () => {
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/password/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Réponse non JSON: ' + text);
+      }
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de l\'envoi de l\'email.');
+      }
       setIsEmailSent(true);
-    } catch (err) {
-      setError('Erreur lors de l\'envoi de l\'email. Veuillez réessayer.');
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }

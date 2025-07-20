@@ -4,7 +4,75 @@ import { useAuth } from '../context/AuthContext';
 import { categories } from '../data/mockData';
 import { ArrowRight, Search, Building2, Star, TrendingUp, Clock, Users, MapPin, UtensilsCrossed, Hammer, ShoppingBag, Wrench, HeartPulse, BookOpen, Car, Smartphone } from 'lucide-react';
 
+interface Stats {
+  entreprises: string;
+  villes: string;
+  moyenneNotes: string;
+  secteurs: string;
+}
+
 export const Dashboard: React.FC = () => {
+  const [allSectors, setAllSectors] = React.useState<any[]>([]);
+  const [popularSectors, setPopularSectors] = React.useState<any[]>([]);
+  const [stats, setStats] = React.useState<Stats>({
+    entreprises: '-',
+    villes: '-',
+    moyenneNotes: '-',
+    secteurs: '-'
+  });
+
+  React.useEffect(() => {
+    const fetchSectors = async () => {
+      try {
+        const res = await fetch('/api/secteurs/populaires');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          // Tri croissant par nombre_interactions puis moyenne_notes
+          const sorted = [...data].sort((a, b) => {
+            if (a.nombre_interactions === b.nombre_interactions) {
+              return (a.moyenne_notes ?? 0) - (b.moyenne_notes ?? 0);
+            }
+            return a.nombre_interactions - b.nombre_interactions;
+          });
+          setAllSectors(sorted);
+          setPopularSectors(sorted.slice(-4).reverse()); // top 4 secteurs populaires
+        } else {
+          setAllSectors([]);
+          setPopularSectors([]);
+        }
+      } catch {
+        setAllSectors([]);
+        setPopularSectors([]);
+      }
+    };
+    fetchSectors();
+  }, []);
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [resEntreprises, resVilles, resNotes, resSecteurs] = await Promise.all([
+          fetch('/api/stats/entreprises'),
+          fetch('/api/stats/villes'),
+          fetch('/api/stats/moyenne-notes'),
+          fetch('/api/stats/secteurs'),
+        ]);
+        const entreprises = await resEntreprises.json();
+        const villes = await resVilles.json();
+        const moyenneNotes = await resNotes.json();
+        const secteurs = await resSecteurs.json();
+        setStats({
+          entreprises: entreprises.nombre_entreprises ?? '-',
+          villes: villes.nombre_villes ?? '-',
+          moyenneNotes: moyenneNotes.moyenne_notes ?? '-',
+          secteurs: secteurs.nombre_secteurs ?? '-',
+        });
+      } catch {
+        setStats({ entreprises: '-', villes: '-', moyenneNotes: '-', secteurs: '-' });
+      }
+    };
+    fetchStats();
+  }, []);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -47,12 +115,7 @@ export const Dashboard: React.FC = () => {
     }
   ];
 
-  const popularCategories = [
-    { name: 'Restaurants', count: 156, growth: '+12%' },
-    { name: 'Artisans', count: 89, growth: '+8%' },
-    { name: 'Commerces', count: 203, growth: '+15%' },
-    { name: 'Services', count: 142, growth: '+5%' },
-  ];
+  // ...supprimé, remplacé par allSectors
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,8 +138,8 @@ export const Dashboard: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold mb-1">Explorer les catégories</h3>
-                <p className="text-gray-300 text-sm">{categories.length}+ catégories disponibles</p>
+                <h3 className="text-lg font-semibold mb-1">Tous les secteurs</h3>
+                <p className="text-gray-300 text-sm">{allSectors.length}+ secteurs disponibles</p>
               </div>
               <ArrowRight className="h-8 w-8" />
             </div>
@@ -137,88 +200,90 @@ export const Dashboard: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-black">Catégories populaires</h2>
+                <h2 className="text-xl font-semibold text-black">Secteurs populaires</h2>
                 <TrendingUp className="h-5 w-5 text-gray-400" />
               </div>
-              
               <div className="space-y-4">
-                {popularCategories.map((category, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-black">{category.name}</p>
-                      <p className="text-sm text-gray-600">{category.count} entreprises</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-black font-medium">{category.growth}</span>
-                      <TrendingUp className="h-4 w-4 text-black" />
+                {popularSectors.map((sector, idx) => (
+                  <div key={idx} className="flex flex-col items-start justify-between p-3 bg-gray-50 rounded-lg">
+                    <p className="font-medium text-black text-lg mb-1">{sector.secteur}</p>
+                    <p className="text-sm text-gray-600 mb-1">{sector.nombre_entreprises} entreprises</p>
+                    <div className="flex flex-row gap-4">
+                      <span className="text-xs text-blue-700">{sector.nombre_interactions} interactions</span>
+                      <span className="text-xs text-yellow-600">Moyenne : {sector.moyenne_notes ?? 0}</span>
+                      <span className="text-xs text-green-700">{sector.nombre_avis} avis</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
+        {/* Tous les secteurs */}
+        <div className="mt-8">
+        </div>
         </div>
 
         {/* Stats Overview */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl shadow-md p-6 text-center">
             <Users className="h-8 w-8 text-black mx-auto mb-2" />
-            <div className="text-2xl font-bold text-black">1,200+</div>
+            <div className="text-2xl font-bold text-black">{stats.entreprises ?? '-'}</div>
             <div className="text-sm text-gray-600">Entreprises vérifiées</div>
           </div>
-          
           <div className="bg-white rounded-xl shadow-md p-6 text-center">
             <Building2 className="h-8 w-8 text-black mx-auto mb-2" />
-            <div className="text-2xl font-bold text-black">50+</div>
+            <div className="text-2xl font-bold text-black">{stats.villes ?? '-'}</div>
             <div className="text-sm text-gray-600">Villes couvertes</div>
           </div>
-          
           <div className="bg-white rounded-xl shadow-md p-6 text-center">
             <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-black">4.8/5</div>
+            <div className="text-2xl font-bold text-black">{stats.moyenneNotes ?? '-'}</div>
             <div className="text-sm text-gray-600">Note moyenne</div>
           </div>
-          
           <div className="bg-white rounded-xl shadow-md p-6 text-center">
             <Search className="h-8 w-8 text-black mx-auto mb-2" />
-            <div className="text-2xl font-bold text-black">15+</div>
-            <div className="text-sm text-gray-600">Catégories</div>
+            <div className="text-2xl font-bold text-black">{stats.secteurs ?? '-'}</div>
+            <div className="text-sm text-gray-600">Secteurs</div>
           </div>
         </div>
 
         {/* Categories Grid */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-black mb-8">Toutes les catégories</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {categories.map((category) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {[...allSectors]
+              .map(sector => ({
+                ...sector,
+                moyenne_notes: sector.moyenne_notes ?? 0,
+                nombre_interactions: sector.nombre_interactions ?? 0
+              }))
+              .sort((a, b) => (b.nombre_interactions ?? 0) - (a.nombre_interactions ?? 0))
+              .map((sector, idx) => (
               <Link
-                key={category.id}
-                to={`/category/${category.id}`}
-                className="group bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-gray-200 transition-all duration-300"
+                key={idx}
+                to={`/secteur/${encodeURIComponent(sector.secteur)}`}
+                className="group bg-white rounded-xl shadow-lg border border-gray-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-blue-200 transition-all duration-300"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-black transition-colors duration-300">
-                    {React.createElement(getIconComponent(category.icon), {
-                      className: "w-6 h-6 text-black group-hover:text-white transition-colors duration-300"
-                    })}
+                  <div className="p-3 bg-gray-100 rounded-lg group-hover:bg-blue-600 transition-colors duration-300">
+                    <Building2 className="w-7 h-7 text-blue-700 group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <ArrowRight className="text-gray-400 group-hover:text-black transition-colors duration-300" size={20} />
+                  <ArrowRight className="text-blue-400 group-hover:text-blue-700 transition-colors duration-300" size={22} />
                 </div>
-                
-                <h3 className="text-xl font-semibold text-black mb-2 group-hover:text-gray-800">
-                  {category.name}
+                <h3 className="text-lg font-semibold text-black mb-2 group-hover:text-blue-700 text-center">
+                  {sector.secteur}
                 </h3>
-                
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {category.description}
+                <p className="text-gray-600 text-sm mb-4 text-center">
+                  {sector.nombre_entreprises} entreprises
                 </p>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">{category.count} services</span>
-                  <div className="flex items-center space-x-1 text-sm text-gray-500">
-                    <span>Voir plus</span>
-                    <ArrowRight size={16} />
-                  </div>
+                <div className="flex flex-row items-center justify-center gap-4 mb-2">
+                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{sector.nombre_interactions} interactions</span>
+                  <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded">Moyenne : {sector.moyenne_notes}</span>
+                  <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">{sector.nombre_avis} avis</span>
+                </div>
+                <div className="flex items-center justify-center space-x-1 text-sm text-gray-500 mt-2">
+                  <span>Voir plus</span>
+                  <ArrowRight size={16} />
                 </div>
               </Link>
             ))}
