@@ -46,8 +46,7 @@ export const Home: React.FC = () => {
             {/* Texte à gauche */}
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                Connectez-vous à l'économie
-                <span className="block text-gray-600">locale camerounaise</span>
+               Bienvenue sur CamerConnect 
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 CamerConnect est la plateforme qui unit les citoyens aux entreprises locales,
