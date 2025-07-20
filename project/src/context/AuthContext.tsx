@@ -6,6 +6,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (nom: string, email: string, password: string, ville: string, age: string, genre: string) => Promise<any>;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
   isAuthenticated: boolean;
 }
 
@@ -24,7 +25,22 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const token = localStorage.getItem('authToken');
+    return token ? { id: '', name: '', email: '', city: '', isAuthenticated: true } : null;
+  });
+
+  const isAuthenticated = user !== null;
+
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prevUser => {
+      if (!prevUser) return null;
+      return {
+        ...prevUser,
+        ...userData
+      };
+    });
+  };
 
   const login = async (email: string, password: string) => {
     const response = await fetch('/api/login', {
@@ -49,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       id: data.id_utilisateur,
       name: data.nom,
       email: data.email,
+      city: data.ville || '',
       isAuthenticated: true
     };
     setUser(newUser);
@@ -98,6 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user
   };
 

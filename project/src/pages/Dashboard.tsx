@@ -4,9 +4,22 @@ import { useAuth } from '../context/AuthContext';
 import { categories } from '../data/mockData';
 import { ArrowRight, Search, Building2, Star, TrendingUp, Clock, Users, MapPin, UtensilsCrossed, Hammer, ShoppingBag, Wrench, HeartPulse, BookOpen, Car, Smartphone } from 'lucide-react';
 
+interface Stats {
+  entreprises: string;
+  villes: string;
+  moyenneNotes: string;
+  secteurs: string;
+}
+
 export const Dashboard: React.FC = () => {
   const [allSectors, setAllSectors] = React.useState<any[]>([]);
   const [popularSectors, setPopularSectors] = React.useState<any[]>([]);
+  const [stats, setStats] = React.useState<Stats>({
+    entreprises: '-',
+    villes: '-',
+    moyenneNotes: '-',
+    secteurs: '-'
+  });
 
   React.useEffect(() => {
     const fetchSectors = async () => {
@@ -34,12 +47,6 @@ export const Dashboard: React.FC = () => {
     };
     fetchSectors();
   }, []);
-  const [stats, setStats] = React.useState({
-    entreprises: null,
-    villes: null,
-    moyenneNotes: null,
-    secteurs: null
-  });
 
   React.useEffect(() => {
     const fetchStats = async () => {
